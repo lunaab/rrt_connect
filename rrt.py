@@ -4,6 +4,7 @@ import sys
 import pylab as pl
 import time
 from matplotlib import collections as mc
+import matplotlib.pyplot as plt
 
 
 class RRT(object):
@@ -98,6 +99,12 @@ class RRT(object):
             
         lc = mc.LineCollection(lines)
         fig, ax = pl.subplots()
+        
+        # Obstacles
+        for circ in obstacles:
+            circle = plt.Circle((circ[0], circ[1]), circ[2])
+            ax.add_patch(circle)
+        
         ax.add_collection(lc)
         ax.autoscale()
         fig.show()
@@ -109,7 +116,7 @@ if __name__ == '__main__':
     goal = (5,5)
     dimensions = 2
     epsilon = 0.1
-    iters = 20000
+    iters = 10000
     obstacles = [(4, 3, 2), (2, 1, 2)]
     test = RRT(start, goal, dimensions, epsilon, obstacles, iters)
     test.build()
