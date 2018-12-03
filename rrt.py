@@ -32,23 +32,32 @@ class RRT(object):
         self.vert_state[vert] = np.array(start)
         
     def add_vertex(self, coords):
+        ''' Adds a vertex to the tree given its coords'''
+        
         vert = self.tree.add_vertex()
         self.vert_state[vert] = np.array(coords)
         self.shadow_state = np.append(self.shadow_state, np.array([coords]),axis=0)
         return vert
         
     def build(self):
+        ''' Builds the tree over iters iterations '''
+        
         for k in range(0, iters):
             q_random = (np.random.rand(self.dimensions)-0.5)*20
             self.extend(q_random)
             
     def collides(self, q):
+        ''' Tests if a point is within an obstacle '''
+        
         for obs in self.obstacles:
             if np.sum((q - obs[0:dimensions])**2)**(0.5) <= obs[dimensions]:
-                return False
-        return True
+                return True
+        return False
                
     def extend(self, q):
+        ''' Creates a new point toward q from its nearest neighbor on
+            the tree. Will connect to q if it is less than epsilon away. '''
+            
         q_near = self.nearest_neighbor(q) #index
         q_new = self.move_to_q(q_near,q) #(1,...,n) point
         if (self.new_config(q_new)):
@@ -63,6 +72,8 @@ class RRT(object):
         return self.extend_ret['Trapped']
         
     def move_to_q(self, q_near, q):
+        ''' Creates a new point toward q from its nearest neighbor on
+            the tree. Will connect to q if it is less than epsilon away. '''
         diff = q - self.vert_state[self.tree.vertex(q_near)]
         dist = np.sum((diff)**2)**(0.5)
         if dist <= self.epsilon:
@@ -73,6 +84,7 @@ class RRT(object):
         
         
     def nearest_neighbor(self, q):
+        ''' Finds the nearest neighbor to q in the tree '''
         dist = q - self.shadow_state
         dist = np.sum((dist**2), axis=1)
         nearest = np.argmin(dist)
@@ -87,10 +99,12 @@ class RRT(object):
         return nearest
         
     def new_config(self, q_new):
-        return self.collides(q_new)
+        ''' A new configuration is one that is not within an obstacle '''
+        return not self.collides(q_new)
             
         
     def visualize(self):
+        ''' Draws the tree in 2D with obstacles '''
         lines = []
         for edge in self.tree.get_edges():
             p1 = (self.vert_state[self.tree.vertex(edge[0])][0], self.vert_state[self.tree.vertex(edge[0])][1])
